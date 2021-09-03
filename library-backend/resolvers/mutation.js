@@ -9,7 +9,7 @@ const JWT_SECRET = "NEED_HERE_A_SECRET_KEY";
 const mutation = {
   addBook: async (root, args, context) => {
     const currentUser = context.currentUser
-    console.log(currentUser)
+
     if (!currentUser) {
       throw new AuthenticationError("not authenticated")
     }

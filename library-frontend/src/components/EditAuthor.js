@@ -3,21 +3,25 @@ import { useMutation } from "@apollo/client";
 import { ALL_AUTHORS, EDIT_AUTHOR } from "../querys";
 import Select from "react-select";
 
-const EditAuthor = ({ notify, authors }) => {
+const EditAuthor = ({ setNotify, authors }) => {
   const [nameOption, setNameOption] = useState(null);
   const [setBornTo, setBornYear] = useState("");
 
   const [changeBornYear, result] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }],
+    refetchQueries: [
+      { query: ALL_AUTHORS }
+    ],
+    onError: error => {
+      setNotify(error.graphQLErrors[0].message)
+    }
   });
 
-  const selectOptions = [];
-  authors.forEach((author) =>
-    selectOptions.push({
-      value: author.name,
-      label: author.name,
-    })
-  );
+  const selectOptions = authors.map(option => {
+    return {
+      value: option.name,
+      label: option.name
+    }
+  })
 
   const submit = (e) => {
     e.preventDefault();
@@ -37,7 +41,7 @@ const EditAuthor = ({ notify, authors }) => {
 
   useEffect(() => {
     if (result.data && result.data.editAuthor === null) {
-      notify("Author not Found");
+      setNotify("Author not Found");
     }
   }, [result.data]);
 

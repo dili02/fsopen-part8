@@ -1,24 +1,35 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { ALL_BOOKS, CREATE_BOOK } from '../querys'
+import { ALL_BOOKS, CREATE_BOOK } from "../querys";
 
-const NewBook = (props) => {
+const NewBook = ({ show, setNotify }) => {
   const [title, setTitle] = useState("");
   const [author, setAuhtor] = useState("");
   const [published, setPublished] = useState("");
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
 
-  const [ createBook ] = useMutation(CREATE_BOOK, {
-    refetchQueries: [
-      { query: ALL_BOOKS }
-    ],
+  const [createBook] = useMutation(CREATE_BOOK, {
     onError: (error) => {
-      props.setNotify(error.graphQLErrors[0].message)
-    }
-  })
+      setNotify(error.graphQLErrors[0].message);
+    },
+    update: (store, response) => {
+      try {
+        const dataInStore = store.readQuery({ query: ALL_BOOKS });
+        store.writeQuery({
+          query: ALL_BOOKS,
+          data: {
+            ...dataInStore,
+            allBooks: [...dataInStore.allBooks, response.data.addPerson],
+          },
+        });
+      } catch (error) {
+        setNotify(error.graphQLErrors[0].message);
+      }
+    },
+  });
 
-  if (!props.show) {
+  if (!show) {
     return null;
   }
 
@@ -30,8 +41,8 @@ const NewBook = (props) => {
         title,
         author,
         published,
-        genres
-      }
+        genres,
+      },
     });
 
     setTitle("");

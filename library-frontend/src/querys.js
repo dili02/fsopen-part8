@@ -24,10 +24,16 @@ export const EDIT_AUTHOR = gql`
 
 // @Books
 export const ALL_BOOKS = gql`
-  query {
-    allBooks {
+  query fetchBooks($filterByAuthor: String, $filterByGenre: String) {
+    allBooks(author: $filterByAuthor, genre: $filterByGenre) {
       title
-      author
+      author {
+        name
+        born
+        bookCount
+        id
+      }
+      genres
       published
       id
     }
@@ -48,7 +54,40 @@ export const CREATE_BOOK = gql`
       genres: $genres
     ) {
       title
-      author
+      author {
+        name
+        id
+      }
+    }
+  }
+`;
+
+export const FIND_BOOKS_WITH_GENRE = gql`
+  query getallBooks($genre: String!) {
+    allBooks(genre: $genre) {
+      title
+      published
+      genres
+      author {
+        name
+      }
+    }
+  }
+`;
+
+// @Auth
+export const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      value
+    }
+  }
+`;
+export const ME = gql`
+  query {
+    me {
+      username
+      favoriteGenre
     }
   }
 `;

@@ -1,27 +1,28 @@
 import React from "react";
 import { useQuery } from "@apollo/client";
-import { ALL_AUTHORS } from '../querys'
+import { ALL_AUTHORS } from "../querys";
 import EditAuthor from './EditAuthor'
 
-const Authors = (props) => {
-  const result = useQuery(ALL_AUTHORS)
+const Authors = ({ show, setNotify }) => {
+  const { data, loading } = useQuery(ALL_AUTHORS)
 
-  if (!props.show) {
+  if (loading) {
+    return <div>loading...</div>;
+  }
+
+  const authors = data.allAuthors;
+  if (!authors) return <p>No authors</p>;
+
+  if (!show) {
     return null;
   }
 
-  if (result.loading)  {
-    return <div>loading...</div>
-  }
-
-  const authors = result.data.allAuthors;
-  if (!authors) return <p>No authors</p>
-
   return (
     <div>
-      <EditAuthor authors={authors} setNotify={props.notify} />
+      <EditAuthor authors={authors} setNotify={setNotify} />
 
       <h2>authors</h2>
+
       <table>
         <tbody>
           <tr>
