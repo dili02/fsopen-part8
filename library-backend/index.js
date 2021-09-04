@@ -2,9 +2,9 @@ const { ApolloServer } = require("apollo-server");
 const { connectDB } = require("./db");
 const { resolvers } = require("./resolvers");
 const { typeDefs } = require("./typeDefs");
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
 const JWT_SECRET = "NEED_HERE_A_SECRET_KEY";
-const User = require('./models/user')
+const User = require("./models/user");
 
 connectDB();
 
@@ -21,6 +21,7 @@ const server = new ApolloServer({
   },
 });
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`);
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`);
 });

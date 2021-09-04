@@ -1,17 +1,19 @@
 const { UserInputError, AuthenticationError } = require("apollo-server");
-const jwt = require('jsonwebtoken')
+const { PubSub } = require("graphql-subscriptions");
+const pubSub = new PubSub();
+const jwt = require("jsonwebtoken");
 const Book = require("../models/book");
 const Author = require("../models/author");
-const User = require("../models/user")
+const User = require("../models/user");
 
 const JWT_SECRET = "NEED_HERE_A_SECRET_KEY";
 
 const mutation = {
   addBook: async (root, args, context) => {
-    const currentUser = context.currentUser
+    const currentUser = context.currentUser;
 
     if (!currentUser) {
-      throw new AuthenticationError("not authenticated")
+      throw new AuthenticationError("not authenticated");
     }
 
     let book = await Book.findOne({
@@ -29,10 +31,10 @@ const mutation = {
     });
 
     if (author) {
-        book = new Book({
-            ...args,
-            author,
-          });
+      book = new Book({
+        ...args,
+        author,
+      });
       try {
         await book.save();
       } catch (error) {
@@ -60,70 +62,70 @@ const mutation = {
       }
     }
 
+    pubsub.publish("BOOK_ADDED", { bookAdded: book });
+
     return book;
   },
   editAuthor: async (root, args, context) => {
-    const currentUser = context.currentUser
+    const currentUser = context.currentUser;
 
     if (!currentUser) {
-      throw new AuthenticationError("not authenticated")
+      throw new AuthenticationError("not authenticated");
     }
 
     let author = await Author.findOne({
-        name: args.name,
+      name: args.name,
     });
 
     if (!author) return null;
 
-    author.born = args.setBornTo
+    author.born = args.setBornTo;
 
     try {
-        await author.save()
+      await author.save();
     } catch (error) {
-        throw new UserInputError(error.message, {
-            invalidArgs: args
-        })
+      throw new UserInputError(error.message, {
+        invalidArgs: args,
+      });
     }
 
-    return author
+    return author;
   },
   createUser: async (root, args) => {
     const user = new User({
-      ...args
-    })
+      ...args,
+    });
 
     try {
-      await user.save()
+      await user.save();
     } catch (error) {
-      throw new UserInputError(
-        error.message, {
-          invalidArgs: args
-        }
-      )
+      throw new UserInputError(error.message, {
+        invalidArgs: args,
+      });
     }
 
-    return user
+    return user;
   },
   login: async (root, args) => {
     const user = await User.findOne({
-      username: args.username
-    })
+      username: args.username,
+    });
 
     if (!user || args.password !== "secret") {
-      throw new UserInputError("Wrong Credentials")
+      throw new UserInputError("Wrong Credentials");
     }
 
     const userForToken = {
       username: user.username,
-      id: user._id
-    }
+      id: user._id,
+    };
 
     return {
-      value: jwt.sign(userForToken, JWT_SECRET)
-    }
+      value: jwt.sign(userForToken, JWT_SECRET),
+    };
   }
 };
 
 module.exports = {
-  mutation
+  mutation,
 };
